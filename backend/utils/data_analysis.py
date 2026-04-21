@@ -6,9 +6,11 @@ import io, base64, json
 from typing import Any
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.pyplot
+matplotlib.use('Agg') # Required for non-GUI servers like Render
+# ... after plotting ...
+plt.close('all') # Force clear memory used by the image
 import seaborn as sns
 from scipy import stats
 

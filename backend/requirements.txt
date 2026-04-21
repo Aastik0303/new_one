@@ -1,22 +1,39 @@
+# FastAPI & Server
 fastapi
 uvicorn[standard]
+python-multipart
 python-dotenv
+pydantic
+pydantic-settings
+
+# LangChain Core (0.3+ structure)
 langchain>=0.3.0
-langchain-community
-langchain-core
+langchain-community>=0.3.0
+langchain-core>=0.3.0
+langchain-text-splitters
 langchain-google-genai
 langchain-groq
-langchain-text-splitters
+
+# Vector Store & RAG
 faiss-cpu
 pypdf
 docx2txt
-requests
+
+# YouTube & Web
 youtube-transcript-api
+requests
 beautifulsoup4
 duckduckgo-search
+
+# Data & Visualization (The missing piece!)
 pandas
-python-multipart
 numpy
+matplotlib
+seaborn
+scipy
+scikit-learn
+
+# AI & Image (Headless for Render)
 tflite-runtime==2.14.0
 Pillow
 opencv-python-headless

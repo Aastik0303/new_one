@@ -11,6 +11,7 @@ faiss-cpu
 pypdf
 docx2txt
 requests
+youtube-transcript-api
 beautifulsoup4
 duckduckgo-search
 pandas

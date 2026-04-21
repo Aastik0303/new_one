@@ -2,7 +2,8 @@ from typing import AsyncGenerator
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from langchain_community.vectorstores import FAISS
 # UPDATED: Use the newer history and message classes
 from langchain_community.chat_message_histories import ChatMessageHistory

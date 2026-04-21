@@ -116,5 +116,11 @@ Respond with EXACTLY ONE label:
             }
             for key in AGENT_MAP
         ]
+import gc # Garbage Collector
+
+def cleanup_memory():
+    """Manually trigger Python's garbage collection to free up RAM."""
+    gc.collect()        
 
 orchestrator = Orchestrator()
+

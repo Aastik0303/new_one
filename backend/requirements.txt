@@ -4,34 +4,35 @@ uvicorn[standard]
 python-multipart
 python-dotenv
 pydantic
+pydantic-settings
 
-# LangChain Core
+# LangChain Ecosystem (Modern 0.3+ structure)
 langchain>=0.3.0
 langchain-community>=0.3.0
 langchain-core>=0.3.0
-
 langchain-google-genai
 langchain-groq
 
 # Vector Store & RAG
 faiss-cpu
-chromadb
+# Note: chromadb can be heavy; faiss-cpu is preferred for Render
+faiss-cpu
 
 # Document Loaders
 pypdf
-unstructured
-python-docx
+docx2txt
+# unstructured can be very large; docx2txt is a lighter alternative for .docx
 
 # YouTube Transcript
 youtube-transcript-api
-pytube
+# pytube is often broken; youtube-transcript-api is more stable for transcripts
 
-# Web Scraping
+# Web Scraping & Research
 requests
 beautifulsoup4
 duckduckgo-search
 
-# Data Analysis
+# Data Analysis & Visualization
 pandas
 numpy
 matplotlib
@@ -39,11 +40,13 @@ seaborn
 scipy
 scikit-learn
 
-# TensorFlow Lite / DeepFake Detection
-tflite-runtime
-tensorflow
+# AI Models & Image Processing
+# IMPORTANT: Use only tflite-runtime for Render to save space. 
+# Remove 'tensorflow' as it is too large (>500MB).
+tflite-runtime==2.14.0
 Pillow
 opencv-python-headless
 
-# Embeddings
+# Utilities
+aiohttp
 sentence-transformers

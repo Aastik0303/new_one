@@ -11,6 +11,8 @@ langchain>=0.3.0
 langchain-community>=0.3.0
 langchain-core>=0.3.0
 langchain-google-genai
+# Add this line to your existing requirements
+langchain-text-splitters>=0.3.0
 langchain-groq
 
 # Vector Store & RAG

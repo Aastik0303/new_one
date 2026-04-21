@@ -15,6 +15,7 @@ youtube-transcript-api
 beautifulsoup4
 duckduckgo-search
 pandas
+python-multipart
 numpy
 tflite-runtime==2.14.0
 Pillow

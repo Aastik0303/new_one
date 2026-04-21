@@ -1,15 +1,15 @@
-"""
-Orchestrator: Routes user messages to the appropriate agent based on intent.
-"""
 from typing import AsyncGenerator
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
+# REMOVED: Direct imports of heavy agents to save startup memory
+from config import settings
+
+# We store the classes in a map but DON'T initialize them yet
 from .general_chatbot import GeneralChatbotAgent
 from .code_agent import CodeAgent
 from .document_rag import DocumentRAGAgent
 from .youtube_rag import YouTubeRAGAgent
 from .deep_researcher import DeepResearcherAgent
-from config import settings
 
 AGENT_MAP = {
     "general": GeneralChatbotAgent,
@@ -27,7 +27,6 @@ AGENT_LABELS = {
     "researcher": "🔬 Deep Researcher",
 }
 
-
 class Orchestrator:
     _instance = None
 
@@ -42,9 +41,9 @@ class Orchestrator:
             return
         self._initialized = True
 
-        self.agents: dict[str, object] = {
-            key: AgentClass() for key, AgentClass in AGENT_MAP.items()
-        }
+        # MEMORY FIX: Start with an empty dict. 
+        # Agents will be created only when a user actually needs them.
+        self._instantiated_agents: dict[str, object] = {}
 
         self.router_llm = ChatGroq(
             model=settings.GROQ_MODEL,
@@ -53,26 +52,34 @@ class Orchestrator:
         )
 
         self.router_system = """You are an intelligent agent router. 
-Based on the user message, respond with EXACTLY ONE of these labels (no other text):
-- general   → casual chat, questions, general knowledge
-- code      → writing code, debugging, programming questions, algorithms
-- document  → questions about uploaded documents, files, PDFs
-- youtube   → YouTube URLs, video analysis, video questions
-- researcher → deep research, comprehensive analysis, fact-finding, current events
+Respond with EXACTLY ONE label:
+- general   → casual chat
+- code      → programming/logic
+- document  → files/PDFs
+- youtube   → video URLs
+- researcher → web search"""
 
-Respond with only the label."""
+    def get_agent(self, key: str):
+        """Lazy loader: Creates the agent only if it doesn't exist in memory."""
+        if key not in AGENT_MAP:
+            key = "general"
+        
+        if key not in self._instantiated_agents:
+            # When this line runs, it triggers the heavy imports inside the agent file
+            AgentClass = AGENT_MAP[key]
+            self._instantiated_agents[key] = AgentClass()
+            
+        return self._instantiated_agents[key]
 
     async def route(self, message: str) -> str:
-        """Determine which agent to use."""
-        # Fast-path routing rules
-        if "youtube.com" in message or "youtu.be" in message:
+        """Determine which agent to use without loading them yet."""
+        msg_lower = message.lower()
+        if "youtube.com" in msg_lower or "youtu.be" in msg_lower:
             return "youtube"
-        keywords_code = ["debug", "code", "function", "algorithm", "error", "bug", "script", "python", "javascript", "sql"]
-        if any(kw in message.lower() for kw in keywords_code):
+        
+        keywords_code = ["debug", "code", "function", "algorithm", "error", "script"]
+        if any(kw in msg_lower for kw in keywords_code):
             return "code"
-        keywords_research = ["research", "analyze", "find information", "what is the latest", "current", "news"]
-        if any(kw in message.lower() for kw in keywords_research):
-            return "researcher"
 
         try:
             result = await self.router_llm.ainvoke([
@@ -80,12 +87,9 @@ Respond with only the label."""
                 HumanMessage(content=message),
             ])
             agent_key = result.content.strip().lower()
-            if agent_key in AGENT_MAP:
-                return agent_key
+            return agent_key if agent_key in AGENT_MAP else "general"
         except Exception:
-            pass
-
-        return "general"
+            return "general"
 
     async def run(
         self,
@@ -94,25 +98,23 @@ Respond with only the label."""
         agent_override: str | None = None,
     ) -> AsyncGenerator[str, None]:
         agent_key = agent_override or await self.route(message)
-        agent = self.agents[agent_key]
+        
+        # Use the lazy loader to get the agent
+        agent = self.get_agent(agent_key)
 
-        yield f"__AGENT__{agent_key}__"  # Signal to frontend which agent is responding
+        yield f"__AGENT__{agent_key}__"
         async for chunk in agent.run(message, session_id):
             yield chunk
 
-    def get_agent(self, key: str):
-        return self.agents.get(key)
-
     def list_agents(self):
+        """Return basic info without instantiating all agents."""
         return [
             {
                 "key": key,
-                "name": self.agents[key].get_name(),
-                "description": self.agents[key].get_description(),
+                "name": key.replace("_", " ").title(), # Basic placeholder
                 "label": AGENT_LABELS.get(key, key),
             }
             for key in AGENT_MAP
         ]
-
 
 orchestrator = Orchestrator()

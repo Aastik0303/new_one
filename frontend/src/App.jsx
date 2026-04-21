@@ -5,7 +5,7 @@ import ChatTab from "./components/ChatTab.jsx";
 import DeepfakeTab from "./components/DeepfakeTab.jsx";
 import DataTab from "./components/DataTab.jsx";
 import ParticleBackground from "./components/ParticleBackground.jsx";
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 export default function App() {
   const [activeTab, setActiveTab] = useState("chat");
   const [sessionId] = useState(() => `sess_${Date.now()}`);
